@@ -170,7 +170,11 @@ class ManualVideoBuilder:
 
         # Step 6: Overlay screenshots
         print_step("🖼️ Overlaying screenshots...")
-        screenshot_width = int((self.W * 45) // 100)
+        # Scale background to final resolution FIRST to avoid scaling issues
+        background_clip = background_clip.filter("scale", self.W, self.H)
+        
+        screenshot_width_percent = self.config.get("screenshot_width_percent", 85)
+        screenshot_width = int((self.W * screenshot_width_percent) // 100)
         current_time = 0
 
         for s in clips:
@@ -184,9 +188,6 @@ class ManualVideoBuilder:
                 y="(main_h-overlay_h)/2",
             )
             current_time += s["audio_duration"]
-
-        # Scale to final resolution
-        background_clip = background_clip.filter("scale", self.W, self.H)
 
         # Step 7: Render
         print_step("🎥 Rendering the video...")
