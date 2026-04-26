@@ -1,18 +1,18 @@
 {
     "__comment": "Supported Backgrounds Audio. Can add/remove background audio here...",
     "lofi": [
-        "https://www.youtube.com/watch?v=LTphVIore3A",
+        "https://www.youtube.com/watch?v=Q7HjxOAU5Kc",
         "lofi.mp3",
-        "Super Lofi World"
+        "Breaking Copyright"
     ],
     "lofi-2":[
-        "https://www.youtube.com/watch?v=BEXL80LS0-I",
+        "https://www.youtube.com/watch?v=cTMOQiY0axo",
         "lofi-2.mp3",
-        "stompsPlaylist"
+        "Breaking Copyright"
     ],
-    "chill-summer":[
-        "https://www.youtube.com/watch?v=EZE8JagnBI8",
-        "chill-summer.mp3",
-        "Mellow Vibes Radio"
+    "lofi-3":[
+        "https://www.youtube.com/watch?v=4sFVeqvJu-0",
+        "lofi-3.mp3",
+        "Chill - Copyright Free Music"
     ]
 }

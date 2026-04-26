@@ -246,3 +246,8 @@ video_creation/data/envvars.txt
 
 config.toml
 *.exe
+.agents
+
+# Manual pipeline
+manual_posts/
+manual_results/
