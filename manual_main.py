@@ -101,7 +101,7 @@ _BASE_SETTINGS_DEFAULTS = {
             "background_thumbnail_font_color": "255,255,255",
         },
         "tts": {
-            "voice_choice": "googletranslate",
+            "voice_choice": "ohfreeme",
             "random_voice": False,
             "elevenlabs_voice_name": "Bella",
             "elevenlabs_api_key": "",
@@ -117,6 +117,11 @@ _BASE_SETTINGS_DEFAULTS = {
             "openai_api_key": "",
             "openai_voice_name": "alloy",
             "openai_model": "tts-1",
+            "ohfreeme_lang": "vi",
+            "ohfreeme_gender": "random",
+            "ohfreeme_rate": 1,
+            "ohfreeme_pitch": 0,
+            "ohfreeme_enhance": False,
         },
     },
 }
@@ -374,6 +379,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     render_parser.add_argument(
         "--force", action="store_true", help="Re-render even if already done"
+    )
+    render_parser.add_argument(
+        "--lang", type=str, default="vi", help="Override TTS language (e.g. vi, en)"
     )
 
     # list command

@@ -9,6 +9,7 @@ Reuses TTS engines from TTS/ module — no code duplication.
 """
 
 import re
+import time
 from pathlib import Path
 from typing import Tuple
 
@@ -121,6 +122,10 @@ class ManualTTSProcessor:
             total_duration += duration
             processed_count += 1
 
+            # Sleep 10s between TTS generation
+            print_substep("  💤 Sleeping 10s...", style="dim")
+            time.sleep(10)
+
             print_substep(
                 f"  ✓ #{idx} → {duration:.1f}s (TTS generated, {len(clean_text)} chars)",
                 style="green",
@@ -149,6 +154,7 @@ class ManualTTSProcessor:
         Reuses the TTS engines from video_creation/voices.py
         """
         from TTS.GTTS import GTTS
+        from TTS.OhFreeMe import OhFreeMe
         from TTS.TikTok import TikTok
         from TTS.aws_polly import AWSPolly
         from TTS.elevenlabs import elevenlabs
@@ -158,6 +164,7 @@ class ManualTTSProcessor:
 
         providers = {
             "googletranslate": GTTS,
+            "ohfreeme": OhFreeMe,
             "awspolly": AWSPolly,
             "streamlabspolly": StreamlabsPolly,
             "tiktok": TikTok,
