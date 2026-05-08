@@ -248,6 +248,8 @@ config.toml
 *.exe
 .agents
 
+docs
+
 # Manual pipeline
 manual_posts/
 manual_results/

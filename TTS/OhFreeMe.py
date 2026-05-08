@@ -105,79 +105,45 @@ class OhFreeMe:
         }
 
         # streaming NDJSON response with debug logging
-        raw_response = b""
         for attempt in range(MAX_RETRIES):
             resp = requests.post(API_URL, json=payload, headers=headers, stream=True)
             # Rate‑limit handling – first line may contain error object
             try:
                 first_line = next(resp.iter_lines())
-                # first_line is bytes; decode for JSON parsing
                 parsed = json.loads(first_line.decode('utf-8'))
-                # debug: show parsed first line
                 print_substep(f"[OhFreeMe debug] First line parsed: {parsed}", style="blue")
-                if parsed.get("status") == "error" and "Too many requests" in parsed.get("message", ""):
+                if parsed.get("status") == "error":
                     print_substep(
                         f"  Rate limited, waiting {RATE_LIMIT_WAIT}s... (attempt {attempt + 1}/{MAX_RETRIES})",
                         style="yellow",
                     )
                     time.sleep(RATE_LIMIT_WAIT)
                     continue
-                raw_response += first_line
             except (StopIteration, json.JSONDecodeError):
                 pass
 
-            # iterate remaining chunks until done
+            # iterate remaining chunks until done, keeping only the final line for processing
             for line in resp.iter_lines():
                 if not line:
                     continue
-                raw_response += line
-                # debug: print raw line (decoded) to terminal
                 try:
-                    decoded_line = line.decode('utf-8')
-                    print_substep(f"[OhFreeMe debug] Received line: {decoded_line}", style="blue")
-                except Exception:
-                    pass
-                # check for error object (e.g., server overload)
-                try:
-                    obj = json.loads(line.decode('utf-8'))
-                    if obj.get('status') == 'error':
-                        raise RuntimeError(f"OhFreeMe API error: {obj.get('message', 'unknown')}")
+                    data = json.loads(line.decode('utf-8'))
                 except json.JSONDecodeError:
-                    pass
-                if b'"status":"done"' in line:
-                    break
-            if b'"status":"done"' in raw_response:
-                # decode to str for _extract_audio
-                return self._extract_audio(raw_response.decode('utf-8'))
+                    continue
+                # debug: print raw line (decoded) to terminal
+                if data.get("status") == "done":
+                    print_substep(f"[OhFreeMe debug] Received line: {data}", style="blue")
+                    return self._extract_audio(data)
 
         raise RuntimeError(f"OhFreeMe TTS failed after {MAX_RETRIES} retries (rate limited)")
 
-    def _extract_audio(self, raw: str) -> bytes:
-        # API returns multiple JSON objects concatenated, e.g.:
-        # {"status":"audio_chunk","chunk":"..."}{"status":"done","url":"data:audio/mpeg;base64,..."}
-        decoder = json.JSONDecoder()
-        pos = 0
-        audio_b64 = None
-
-        while pos < len(raw):
-            # Skip whitespace
-            while pos < len(raw) and raw[pos].isspace():
-                pos += 1
-            if pos >= len(raw):
-                break
-
-            obj, end = decoder.raw_decode(raw, pos)
-            pos = end
-
-            if obj.get("status") == "done" and "url" in obj:
-                url = obj["url"]
-                # url format: "data:audio/mpeg;base64,<base64data>"
-                if url.startswith("data:") and ";base64," in url:
-                    b64_part = url.split(";base64,", 1)[1]
-                    audio_b64 = b64_part
-                break
-
-        if not audio_b64:
-            raise RuntimeError(f"Could not extract audio from API response")
-
-        return base64.b64decode(audio_b64)
+    def _extract_audio(self, data: dict) -> bytes:
+        # Expecting a dict with a "url" field containing a data URI
+        url = data.get("url")
+        if not url:
+            raise RuntimeError("Missing 'url' in API response data")
+        # url format: "data:audio/mpeg;base64,<base64data>"
+        if not (url.startswith("data:") and ";base64," in url):
+            raise RuntimeError(f"Unexpected URL format in API response: {url}")
+        b64_part = url.split(";base64,", 1)[1]
+        return base64.b64decode(b64_part)
