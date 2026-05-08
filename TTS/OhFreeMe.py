@@ -1,16 +1,22 @@
 import base64
 import json
+import os
 import random
 import time
 from pathlib import Path
 
 import requests
+from dotenv import load_dotenv
 
 from utils import settings
 from utils.console import print_substep
 
-API_URL = "https://tts.ohfree.me/api/tts"
-# JWT token for authentication (replace if needed)
+# Load environment variables from .env file
+load_dotenv()
+
+OHFREEME_API_URL = os.getenv("OHFREEME_API_URL", "")
+OHFREEME_BASE_URL = os.getenv("OHFREEME_BASE_URL", "")
+JWT_TOKEN = os.getenv("OHFREEME_JWT_TOKEN", "")
 VOICES_FILE = Path(__file__).resolve().parent.parent / "config" / "ohfreeme_voices.json"
 MAX_RETRIES = 3
 RATE_LIMIT_WAIT = 10
@@ -98,15 +104,15 @@ class OhFreeMe:
             "accept": "*/*",
             "cache-control": "no-cache",
             "content-type": "application/json",
-            "origin": "https://tts.ohfree.me",
+            "origin": OHFREEME_BASE_URL,
             "cookie": f"auth_token={JWT_TOKEN}",
-            "referer": "https://tts.ohfree.me/",
+            "referer": OHFREEME_BASE_URL,
             "user-agent": self._pick_user_agent(),
         }
 
         # streaming NDJSON response with debug logging
         for attempt in range(MAX_RETRIES):
-            resp = requests.post(API_URL, json=payload, headers=headers, stream=True)
+            resp = requests.post(OHFREEME_API_URL, json=payload, headers=headers, stream=True)
             # Rate‑limit handling – first line may contain error object
             try:
                 first_line = next(resp.iter_lines())
