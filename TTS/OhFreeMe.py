@@ -16,7 +16,7 @@ load_dotenv()
 
 OHFREEME_API_URL = os.getenv("OHFREEME_API_URL", "")
 OHFREEME_BASE_URL = os.getenv("OHFREEME_BASE_URL", "")
-JWT_TOKEN = os.getenv("OHFREEME_JWT_TOKEN", "")
+OHFREEME_JWT_TOKEN = os.getenv("OHFREEME_JWT_TOKEN", "")
 VOICES_FILE = Path(__file__).resolve().parent.parent / "config" / "ohfreeme_voices.json"
 MAX_RETRIES = 3
 RATE_LIMIT_WAIT = 10
@@ -101,13 +101,16 @@ class OhFreeMe:
             "pitch": settings.config["settings"]["tts"].get("ohfreeme_pitch", 0),
         }
         headers = {
-            "accept": "*/*",
             "cache-control": "no-cache",
             "content-type": "application/json",
-            "origin": OHFREEME_BASE_URL,
-            "cookie": f"auth_token={JWT_TOKEN}",
-            "referer": OHFREEME_BASE_URL,
-            "user-agent": self._pick_user_agent(),
+            "accept": "*/*",
+            "accept-language": "en-GB,en-US;q=0.9,en;q=0.8,vi;q=0.7", # important
+            "sec-fetch-mode": "cors", # important
+            "sec-fetch-site": "same-origin", # important
+            "Cookie": f"auth_token={OHFREEME_JWT_TOKEN}", # important
+            "user-agent": self._pick_user_agent(), # important
+            # "origin": OHFREEME_BASE_URL,
+            # "referer": f"{OHFREEME_BASE_URL}/",
         }
 
         # streaming NDJSON response with debug logging
@@ -138,7 +141,7 @@ class OhFreeMe:
                     continue
                 # debug: print raw line (decoded) to terminal
                 if data.get("status") == "done":
-                    print_substep(f"[OhFreeMe debug] Received line: {data}", style="blue")
+                    print_substep(f"[OhFreeMe debug] Received")
                     return self._extract_audio(data)
 
         raise RuntimeError(f"OhFreeMe TTS failed after {MAX_RETRIES} retries (rate limited)")

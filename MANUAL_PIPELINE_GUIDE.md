@@ -98,7 +98,16 @@ background_video = "minecraft"    # Video nền
 background_audio = "lofi"         # Audio nền
 background_audio_volume = 0.15    # Âm lượng audio nền (0 = tắt)
 max_video_length = 120            # Max thời lượng video (giây)
+watermark_enabled = true          # Enable/disable watermark overlay
+watermark_path = "assets/backgrounds/transparent-bg.png"  # Path to watermark PNG file
 ```
+
+**Watermark:**
+- `watermark_enabled`: Set to `true` để thêm watermark vào tất cả videos, `false` để tắt
+- `watermark_path`: Đường dẫn tới file PNG watermark (mặc định: `assets/transparent-bg.png`)
+  - File phải có kích thước 1080×1920 pixels với alpha transparency
+  - Vùng transparent sẽ hiển thị video phía dưới
+  - Watermark xuất hiện suốt thời lượng của video
 
 TTS engine được lấy từ section `[settings.tts]` trong `config.toml`. Mặc định dùng **GoogleTranslate** (không cần API key).
 

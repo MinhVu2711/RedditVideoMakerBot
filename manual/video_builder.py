@@ -111,6 +111,10 @@ class ManualVideoBuilder:
         # Output settings
         self.output_dir = Path(self.config.get("output_dir", "manual_results"))
 
+        # Watermark settings
+        self.watermark_enabled = self.config.get("watermark_enabled", True)
+        self.watermark_path = Path(self.config.get("watermark_path", "assets/backgrounds/transparent-bg.png"))
+
     def build(self) -> str:
         """Build the final video.
 
@@ -189,12 +193,24 @@ class ManualVideoBuilder:
             )
             current_time += s["audio_duration"]
 
-        # Step 7: Render
+        # Step 7: Overlay watermark (if enabled)
+        if self.watermark_enabled and self.watermark_path.exists():
+            print_step("🎨 Applying watermark...")
+            watermark_input = ffmpeg.input(str(self.watermark_path))["v"]
+            background_clip = background_clip.overlay(
+                watermark_input,
+                x=0,
+                y=0,
+            )
+        elif self.watermark_enabled and not self.watermark_path.exists():
+            print_substep(f"Warning: Watermark enabled but file not found: {self.watermark_path}", style="yellow")
+
+        # Step 8: Render
         print_step("🎥 Rendering the video...")
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
         # Normalize filename
-        filename = self._normalize_filename(self.post.get("title", self.post_id))
+        filename = self._normalize_filename(self.post_id)
         output_path = str(self.output_dir / f"{filename}.mp4")
         # Prevent path too long
         if len(output_path) > 251:

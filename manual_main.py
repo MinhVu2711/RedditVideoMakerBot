@@ -50,7 +50,9 @@ MANUAL_DEFAULTS = {
     "background_audio_dir": "assets/backgrounds/audio",
     "background_audio_volume": 0.1,
     "max_video_length": 120,
-    "screenshot_width_percent": 85
+    "screenshot_width_percent": 85,
+    "watermark_enabled": True,
+    "watermark_path": "assets/backgrounds/transparent-bg.png",
 }
 
 # Full default settings.config that TTS engines and shared modules expect.
