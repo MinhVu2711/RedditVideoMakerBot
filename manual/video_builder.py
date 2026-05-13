@@ -11,7 +11,6 @@ Uses libx264 encoder (CPU-based) by default.
 
 import math
 import multiprocessing
-import os
 import re
 import tempfile
 import threading
@@ -140,7 +139,7 @@ class ManualVideoBuilder:
         total_duration = sum(s["audio_duration"] for s in clips)
         video_length = math.ceil(total_duration)
 
-        console.log(f"[bold green] Video will be: {video_length} seconds long ({len(clips)} clips)")
+        print_substep(f"[bold green] Video will be: {video_length} seconds long ({len(clips)} clips)")
 
         # Ensure temp directory exists
         self.temp_dir.mkdir(parents=True, exist_ok=True)

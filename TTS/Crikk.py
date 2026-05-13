@@ -2,7 +2,6 @@ import base64
 import json
 import os
 import random
-import time
 from pathlib import Path
 
 import requests
@@ -14,13 +13,9 @@ from utils.console import print_substep
 # Load environment variables from .env file
 load_dotenv()
 
-OHFREEME_API_URL = os.getenv("OHFREEME_API_URL", "")
-OHFREEME_BASE_URL = os.getenv("OHFREEME_BASE_URL", "")
-OHFREEME_JWT_TOKEN = os.getenv("OHFREEME_JWT_TOKEN", "")
-VOICES_FILE = Path(__file__).resolve().parent.parent / "config" / "ohfreeme_voices.json"
-MAX_RETRIES = 3
-RATE_LIMIT_WAIT = 20
-
+CRIKK_API_URL = os.getenv("CRIKK_API_URL", "")
+CRIKK_BASE_URL = os.getenv("CRIKK_BASE_URL", "")
+VOICES_FILE = Path(__file__).resolve().parent.parent / "config" / "crikk_voices.json"
 
 def _load_voices() -> list[dict]:
     try:
@@ -31,7 +26,7 @@ def _load_voices() -> list[dict]:
         return []
 
 
-class OhFreeMe:
+class Crikk:
     # Load list of User‑Agent strings for random header
     _user_agents = None
 
@@ -60,7 +55,7 @@ class OhFreeMe:
         return "Mozilla/5.0"
 
     def __init__(self):
-        self.max_chars = 2500
+        self.max_chars = 1200
         self.voices = _load_voices()
 
     def run(self, text, filepath, random_voice: bool = False):
@@ -91,60 +86,28 @@ class OhFreeMe:
     def _call_api(self, text: str, voice_id: int) -> bytes:
         payload = {
             "text": text,
-            "id": voice_id,
-            "useEnhance": settings.config["settings"]["tts"].get("ohfreeme_enhance", False),
-            "rate": settings.config["settings"]["tts"].get("ohfreeme_rate", 1),
-            "pitch": settings.config["settings"]["tts"].get("ohfreeme_pitch", 0),
+            "voice": voice_id,
         }
         headers = {
             "cache-control": "no-cache",
             "content-type": "application/json",
             "accept": "*/*",
-            "accept-language": "en-GB,en-US;q=0.9,en;q=0.8,vi;q=0.7", # important
-            "sec-fetch-mode": "cors", # important
-            "sec-fetch-site": "same-origin", # important
-            "Cookie": f"auth_token={OHFREEME_JWT_TOKEN}", # important
             "user-agent": self._pick_user_agent(), # important
-            # "origin": OHFREEME_BASE_URL,
-            # "referer": f"{OHFREEME_BASE_URL}/",
+            "origin": CRIKK_BASE_URL, # important
         }
 
-        # streaming NDJSON response with debug logging
-        for attempt in range(MAX_RETRIES):
-            resp = requests.post(OHFREEME_API_URL, json=payload, headers=headers, stream=True)
-            # Rate‑limit handling – first line may contain error object
-            try:
-                first_line = next(resp.iter_lines())
-                parsed = json.loads(first_line.decode('utf-8'))
-                print_substep(f"[OhFreeMe debug] First line parsed: {parsed}", style="blue")
-                if parsed.get("status") == "error":
-                    print_substep(
-                        f"  Rate limited, waiting {RATE_LIMIT_WAIT}s... (attempt {attempt + 1}/{MAX_RETRIES})",
-                        style="yellow",
-                    )
-                    time.sleep(RATE_LIMIT_WAIT)
-                    continue
-            except (StopIteration, json.JSONDecodeError):
-                pass
+        resp = requests.post(CRIKK_API_URL, json=payload, headers=headers)
+        data = resp.json()
 
-            # iterate remaining chunks until done, keeping only the final line for processing
-            for line in resp.iter_lines():
-                if not line:
-                    continue
-                try:
-                    data = json.loads(line.decode('utf-8'))
-                except json.JSONDecodeError:
-                    continue
-                # debug: print raw line (decoded) to terminal
-                if data.get("status") == "done":
-                    print_substep(f"[OhFreeMe debug] Received")
-                    return self._extract_audio(data)
+        if data.get("message") == "success":
+            print_substep(f"[Crikk debug] Received")
+            return self._extract_audio(data)
 
-        raise RuntimeError(f"OhFreeMe TTS failed after {MAX_RETRIES} retries (rate limited)")
+        raise RuntimeError(f"Crikk TTS failed")
 
     def _extract_audio(self, data: dict) -> bytes:
         # Expecting a dict with a "url" field containing a data URI
-        url = data.get("url")
+        url = data.get("audio_data")
         if not url:
             raise RuntimeError("Missing 'url' in API response data")
         # url format: "data:audio/mpeg;base64,<base64data>"

@@ -43,7 +43,7 @@ MANUAL_DEFAULTS = {
     "encoder": "libx264",
     "resolution_w": 1080,
     "resolution_h": 1920,
-    "opacity": 0.9,
+    "opacity": 1,
     "background_video": "random",
     "background_audio": "random",
     "background_video_dir": "assets/backgrounds/video",
@@ -103,7 +103,7 @@ _BASE_SETTINGS_DEFAULTS = {
             "background_thumbnail_font_color": "255,255,255",
         },
         "tts": {
-            "voice_choice": "ohfreeme",
+            "voice_choice": "crikk",
             "random_voice": False,
             "elevenlabs_voice_name": "Bella",
             "elevenlabs_api_key": "",

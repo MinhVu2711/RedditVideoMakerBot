@@ -1,0 +1,14 @@
+[
+  {
+    "id": "vi-VN-NamMinhNeural",
+    "name": "NamMinh",
+    "gender": "male",
+    "lang": "vi"
+  },
+  {
+    "id": "vi-VN-HoaiMyNeural",
+    "name": "HoaiMy",
+    "gender": "female",
+    "lang": "vi"
+  }
+]

@@ -155,6 +155,7 @@ class ManualTTSProcessor:
         """
         from TTS.GTTS import GTTS
         from TTS.OhFreeMe import OhFreeMe
+        from TTS.Crikk import Crikk
         from TTS.TikTok import TikTok
         from TTS.aws_polly import AWSPolly
         from TTS.elevenlabs import elevenlabs
@@ -165,6 +166,7 @@ class ManualTTSProcessor:
         providers = {
             "googletranslate": GTTS,
             "ohfreeme": OhFreeMe,
+            "crikk": Crikk,
             "awspolly": AWSPolly,
             "streamlabspolly": StreamlabsPolly,
             "tiktok": TikTok,
@@ -181,7 +183,7 @@ class ManualTTSProcessor:
                 f"Unknown TTS provider: {voice_choice}. Falling back to GoogleTranslate.",
                 style="yellow",
             )
-            engine_class = GTTS
+            engine_class = Crikk
 
         print_substep(f"Using TTS engine: {engine_class.__name__}")
         return engine_class()
